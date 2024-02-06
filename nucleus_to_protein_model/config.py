@@ -101,6 +101,25 @@ class ProteoscopeModelConfig:
 
 
 @dataclass
+class Nuc2ProtModelConfig:
+    sample_size: int
+    in_channels: int
+    out_channels: int
+    layers_per_block: int
+    block_out_channels: Tuple[int]
+    down_block_types: Tuple[str]
+    up_block_types: Tuple[str]
+    cross_attention_dim: int
+    num_train_timesteps: int
+    num_val_timesteps: int
+    cond_images: bool
+    unconditioned_probability: float
+    latents_init_scale: float
+    guidance_scale: float
+    autoencoder: AutoencoderModelConfig
+    autoencoder_checkpoint: str
+
+@dataclass
 class OptimizerConfig:
     learning_rate: float
     beta_1: float
