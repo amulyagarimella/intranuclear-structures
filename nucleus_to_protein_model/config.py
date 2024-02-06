@@ -160,3 +160,12 @@ class ProteoscopeConfig:
     trainer: TrainerConfig
     splits: SplitsConfig
     model_type: str
+
+
+@dataclass
+class Nuc2Prot:
+    data: DataConfig
+    module: ModuleConfig
+    trainer: TrainerConfig
+    splits: SplitsConfig
+    model_type: str
