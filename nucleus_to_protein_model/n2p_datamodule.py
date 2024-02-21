@@ -18,22 +18,16 @@ class Nuc2ProtDM(LightningDataModule):
         batch_size: int,
         num_workers: int,
         splits,
-        # sequences_path: Optional[str] = None,
         trim: Optional[int] = None,
-        # sequence_embedding: Optional[str] = None,
-        # sequence_dropout: Optional[float] = None,
     ):
         super().__init__()
 
         self.images_path = images_path
         self.labels_path = labels_path
-        # self.sequences_path = sequences_path
         self.batch_size = batch_size
         self.num_workers = num_workers
         self.trim = trim
-        # self.sequence_embedding = sequence_embedding
         self.splits = splits
-        # self.sequence_dropout = sequence_dropout
 
     def prepare_data(self):
         pass
@@ -42,11 +36,6 @@ class Nuc2ProtDM(LightningDataModule):
         self.images = zarr.open(self.images_path, mode="r")
         self.labels = pd.read_csv(self.labels_path, index_col=0)
         self.labels = self.labels.fillna("other")
-
-        """if self.sequences_path is not None:
-            self.sequences = zarr.open(self.sequences_path, "r")
-        else:
-            self.sequences = None"""
 
         self.train_dataset = Nuc2ProtDataset(
             images=self.images,
