@@ -9,14 +9,20 @@ from pytorch_lightning import LightningModule
 from tqdm.auto import tqdm
 from torchvision.transforms.functional import resize
 from ema_pytorch import EMA
-import esm
-from peft import LoraConfig, get_peft_model
-from contextlib import nullcontext
 
-from .autoencoder import AutoencoderLM
-from .cytoself import CytoselfLM
-from .esm_bottleneck import ESMBottleneck
-from .scheduler import get_cosine_schedule_with_warmup
+import os
+import sys
+import inspect
+
+currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
+parentdir = os.path.dirname(currentdir)
+sys.path.insert(0, parentdir) 
+
+#from autoencoder import AutoencoderLM
+
+from proteoscope.proteoscope.modules.cytoself import CytoselfLM
+#from .esm_bottleneck import ESMBottleneck
+from .scheduler import get_cosine_schedule_with_warmu
 
 class LinearRampScheduler:
     def __init__(self, initial_steps, ramp_steps):
@@ -32,7 +38,7 @@ class LinearRampScheduler:
         else:
             return 1.0
 
-class N2P(LightningModule):
+class Nuc2Prot(LightningModule):
     def __init__(
         self,
         module_config,
@@ -46,7 +52,7 @@ class N2P(LightningModule):
             block_out_channels=module_config.model.block_out_channels,  # the number of output channels for each UNet block
             down_block_types=module_config.model.down_block_types,
             up_block_types=module_config.model.up_block_types,
-            cross_attention_dim=module_config.model.cross_attention_dim,
+            # cross_attention_dim=module_config.model.cross_attention_dim,
             time_cond_proj_dim=module_config.model.time_cond_proj_dim,
         )
         self.ema = EMA(
@@ -378,13 +384,13 @@ class N2P(LightningModule):
         return scores
 
     def configure_optimizers(self):
-        if self.freeze_cross_attention:
+        """if self.freeze_cross_attention:
             freeze_cross_attention(self.unet)
             freeze_cross_attention(self.esm_bottleneck)
 
         if self.only_cross_attention:
             only_cross_attention(self.unet)
-            all_requires_grad(self.esm_bottleneck)
+            all_requires_grad(self.esm_bottleneck)"""
 
         if self.cytoself is not None:
             for param in self.cytoself.parameters():

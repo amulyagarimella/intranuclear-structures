@@ -3,11 +3,11 @@ from pathlib import Path
 from typing import Optional, Union
 
 import pandas as pd
-import zarr
+# import zarr
 from pytorch_lightning import LightningDataModule
 from torch.utils.data import DataLoader
 
-from .dataset import Nuc2ProtDataset
+from n2p_dataset import Nuc2ProtDataset
 
 
 class Nuc2ProtDM(LightningDataModule):

@@ -1,0 +1,3 @@
+[submodule "proteoscope"]
+	path = proteoscope
+	url = https://github.com/sofroniewn/proteoscope.git
