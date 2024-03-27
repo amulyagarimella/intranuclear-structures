@@ -20,9 +20,9 @@ sys.path.insert(0, parentdir)
 
 #from autoencoder import AutoencoderLM
 
-from proteoscope.proteoscope.modules.cytoself import CytoselfLM
+from proteoscope.proteoscope.modules.cytoselflm import CytoselfLM
 #from .esm_bottleneck import ESMBottleneck
-from .scheduler import get_cosine_schedule_with_warmu
+from proteoscope.proteoscope.modules.scheduler import get_cosine_schedule_with_warmup
 
 class LinearRampScheduler:
     def __init__(self, initial_steps, ramp_steps):
