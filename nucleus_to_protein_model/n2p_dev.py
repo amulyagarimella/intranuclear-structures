@@ -24,6 +24,12 @@ from proteoscope.proteoscope.modules.cytoselflm import CytoselfLM
 #from .esm_bottleneck import ESMBottleneck
 from proteoscope.proteoscope.modules.scheduler import get_cosine_schedule_with_warmup
 
+def combine_images(img_set1, img_set2):
+    n = img_set1.shape[0]
+    row1 = torch.cat(img_set1.chunk(n, dim=0), dim=2).squeeze(0)
+    row2 = torch.cat(img_set2.chunk(n, dim=0), dim=2).squeeze(0)
+    return torch.cat([row1, row2], dim=0)
+
 class LinearRampScheduler:
     def __init__(self, initial_steps, ramp_steps):
         self.initial_steps = initial_steps
@@ -131,25 +137,25 @@ class Nuc2Prot(LightningModule):
             if self.latents_init_scale is None:
                 first_batch_latents = self.autoencoder.encode(
                     batch["image"]
-                ).latent_dist.mode() # TODO
-                latent_init_mean = first_batch_latents.mean() #TODO
+                ).latent_dist.mode()
+                latent_init_mean = first_batch_latents.mean() 
                 self.latents_init_scale = (
                     (first_batch_latents - latent_init_mean).pow(2).mean().pow(0.5)
-                ) # TODO
+                ) 
 
             latents = (
                 self.autoencoder.encode(batch["image"]).latent_dist.sample()
                 / self.latents_init_scale
-            ) # TODO
+            )
 
             if cond_images is not None:
-                latents_cond = (
-                    resize(cond_images, self.latents_shape[-2:])
-                    / self.cond_latents_init_scale
+                # TODO think more about this
+                cond_encoded = (
+                    self.autoencoder.encode(cond_images).latent_dist.sample()
+                    / self.latents_init_scale
                 )
-                latents_cond = latents_cond.unsqueeze(dim=1)
             else:
-                latents_cond = None
+                cond_encoded = None
 
         # Sample noise to add to the latents
         noise = torch.randn(latents.shape).to(latents)
@@ -165,17 +171,12 @@ class Nuc2Prot(LightningModule):
         noisy_latents = self.noise_scheduler.add_noise(latents, noise, timesteps)
 
         # Predict the noise residual
-        if latents_cond is not None:
-            model_input = torch.cat([noisy_latents, latents_cond], dim=1)
-        else:
-            model_input = noisy_latents
+        model_input = noisy_latents
 
         noise_pred = self.unet(
             model_input,
             timesteps,
-            encoder_hidden_states=TODO,
-            encoder_attention_mask=TODO,
-            timestep_cond=TODO,
+            encoder_hidden_states=cond_encoded,
             return_dict=False,
         )[0]
 
@@ -300,15 +301,13 @@ class Nuc2Prot(LightningModule):
         )
 
         if cond_images is not None:
-            latents_cond = (
-                resize(cond_images, self.latents_shape[-2:])
-                / self.cond_latents_init_scale
+            cond_encoded = (
+                self.autoencoder.encode(cond_images).latent_dist.sample()
+                / self.latents_init_scale
             )
-            latents_cond = latents_cond.unsqueeze(dim=1)
-            latents_cond = torch.cat([latents_cond] * 2).to(self.unet.device)
         else:
-            latents_cond = None
-
+            cond_encoded = None
+    
         # set step values
         if num_inference_steps is None:
             num_inference_steps = self.noise_scheduler.config.num_train_timesteps
@@ -321,18 +320,11 @@ class Nuc2Prot(LightningModule):
                 latent_model_input, timestep=t
             )
 
-            if latents_cond is not None:
-                latent_model_input = torch.cat(
-                    [latent_model_input, latents_cond], dim=1
-                )
-
             # predict the noise residual
             noise_pred = self.ema(
                 latent_model_input,
                 t,
-                encoder_hidden_states=seq_embeds,
-                encoder_attention_mask=seq_mask,
-                timestep_cond=timestep_cond,
+                encoder_hidden_states=cond_encoded,
             ).sample
 
             # perform guidance

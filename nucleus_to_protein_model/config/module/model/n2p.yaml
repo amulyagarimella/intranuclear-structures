@@ -1,0 +1,70 @@
+sample_size: 25
+in_channels: 5
+out_channels: 4
+layers_per_block: 2
+block_out_channels: [128, 256, 512]
+latent_channels: 4
+down_block_types: ['CrossAttnDownBlock2D', 'CrossAttnDownBlock2D', 'DownBlock2D']
+up_block_types: ['UpBlock2D', 'CrossAttnUpBlock2D', 'CrossAttnUpBlock2D']
+cross_attention_dim: 1024
+time_cond_proj_dim: 1024
+num_train_timesteps: 1000
+num_val_timesteps: 50
+cond_images: True
+freeze_cross_attention: False
+only_cross_attention: False
+sequence_condition_probability: 0.8
+unconditioned_initial_steps: null
+sequence_condition_ramp_steps: null
+latents_init_scale: 2.895
+cond_latents_init_scale: 11.29
+guidance_scale: 3.0
+ema_decay: 0.9999
+ema_update_after_step: 1_000
+scheduler: ddim
+esm: null
+esm_bottleneck:
+  d_init: 1024
+  d_model: 0 # cross_attention_dim
+  nhead: 4
+  num_encoder_layers: 0
+  dim_feedforward: 256
+  dropout: 0.2
+  return_type: 'full'
+autoencoder:
+  checkpoint: /home/ec2-user/outputs/autoencoder/2023-08-19/17-28-45/checkpoints/last.ckpt # 2023-08-17/05-03-37 2023-08-19/17-28-45
+  model:
+    image_height: 100
+    in_channels: 2
+    out_channels: 2
+    layers_per_block: 2
+    block_out_channels: [128, 256, 512]
+    latent_channels: 4
+    down_block_types: ['DownEncoderBlock2D', 'DownEncoderBlock2D', 'DownEncoderBlock2D']
+    up_block_types: ['UpDecoderBlock2D', 'UpDecoderBlock2D', 'UpDecoderBlock2D']
+    classifier: null
+    loss:
+      classifier_weight: 0.1
+      kl_weight: 1e-7
+      perceptual_weight: 2.0
+      pixel_weight: 1.0
+      disc_weight: 1.0
+      disc_start: 2400
+cytoself:
+  checkpoint: /home/ec2-user/outputs/cytoself/2023-09-02/05-17-26/checkpoints/last.ckpt # 2023-08-21/19-45-50 2023-08-17/05-03-37
+  num_class: 1311 # 1311 or 1049
+  model:
+    input_shape: [2, 100, 100]
+    emb_shapes: [[25, 25], [4, 4]]
+    output_shape: [2, 100, 100]
+    fc_output_idx: [2]
+    vq_args:
+      num_embeddings: 2048
+      embedding_dim: 64
+    fc_args:
+      num_layers: 2
+    fc_input_type: 'vqvec'
+    num_class: null
+    vq_coeff: 1.0
+    fc_coeff: 1.0
+    image_variance: 0.0167

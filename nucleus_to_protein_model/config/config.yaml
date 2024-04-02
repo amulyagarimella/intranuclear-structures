@@ -1,0 +1,16 @@
+model_type: n2p
+
+defaults:
+  - _self_
+  - data: data # data data-proteoloc data-proteoloc-lora data-proteoscope-lora data-proteoscope-esm
+  - module/optimizer: adamw
+  - trainer:  cpu
+  - module/model: n2p
+  - splits: standard 
+
+hydra:
+  run:
+    dir: /home/ec2-user/outputs/proteoclip/${now:%Y-%m-%d}/${now:%H-%M-%S}
+
+chkpt: null 
+reset: False 
